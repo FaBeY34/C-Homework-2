@@ -133,29 +133,64 @@ void addLine(MetroSystem *system, MetroLine line)
 
 void printLine(MetroLine line)
 {
-    printf("Line: %s\n", line.color);
     for (int i = 0; i < line.count; i++)
     {
         printf("%s\n", line.MetroStations[i].name);
     }
 }
 
-// void printPath(MetroStations[] stations)
-// {
-//     for (int i = 0; i < count; i++)
-//     {
-//         printf("%s\n", stations[i].name);
-//     }
-// }
+void printPath(MetroLine line)
+{
+    for (int i = 0; i < line.count; i++)
+    {
+        printf("%s\n", line.MetroStations[i].name);
+    }
+}
 
 double getDistanceTravelled(MetroLine line)
 {
     double distance = 0;
-    for (int i = 0; i < line.count - 1; i++)
+    if (line.count > 1)
     {
-        distance += sqrt(pow(line.MetroStations[i + 1].x - line.MetroStations[i].x, 2) + pow(line.MetroStations[i + 1].y - line.MetroStations[i].y, 2));
+        for (int i = 0; i < line.count - 1; i++)
+        {
+            distance += sqrt(pow(line.MetroStations[i + 1].x - line.MetroStations[i].x, 2) + pow(line.MetroStations[i + 1].y - line.MetroStations[i].y, 2));
+        }
     }
     return distance;
+}
+
+//may need to change this
+MetroStation findNearestStation(MetroSystem system, double x, double y)
+{
+    MetroStation nearestStation;
+    strcpy(nearestStation.name, "NULL");
+    nearestStation.x = 0;
+    nearestStation.y = 0;
+    double distance = 0;
+    for (int i = 0; i < system.count; i++)
+    {
+        for (int j = 0; j < system.MetroLines[i].count - 1; j++)
+        {
+            if (j == 0)
+            {
+                MetroStation firstStop = getFirstStop(system.MetroLines[i]);
+                distance = sqrt(pow(firstStop.x - x, 2) + pow(firstStop.y - y, 2));
+                nearestStation = firstStop;
+            }
+            else
+            {
+                MetroStation nextStop = getNextStop(system.MetroLines[j], nearestStation);
+                double newDistance = sqrt(pow(nextStop.x - x, 2) + pow(nextStop.y - y, 2));
+                if (newDistance < distance)
+                {
+                    distance = newDistance;
+                    nearestStation = system.MetroLines[i].MetroStations[j];
+                }
+            }
+        }
+    }
+    return nearestStation;
 }
 
 int main(int argc, char const *argv[])
