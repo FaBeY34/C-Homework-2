@@ -171,7 +171,7 @@ void printLine(MetroLine line)
 
 void printPath(MetroStation *stations)
 {
-    int size = sizeof(stations) / sizeof(*stations);
+    int size = sizeof(stations)/sizeof(stations[0]);
     for (int i = 0; i < size; i++)
     {
         printf("%s\n", stations[i].name);
@@ -229,19 +229,18 @@ void getNeighboringStations(MetroSystem system, MetroStation station, MetroStati
                     if (j == 0)
                     {
                         neighboringStations[count] = system.MetroLines[i].MetroStations[j + 1];
-                        count++;
+                        return;
                     }
                     else if (j == lastIndex)
                     {
                         neighboringStations[count] = system.MetroLines[i].MetroStations[j - 1];
-                        count++;
+                        return;
                     }
                     else
                     {
-                        neighboringStations[count] = system.MetroLines[i].MetroStations[j - 1];
-                        count++;
+                        neighboringStations[count++] = system.MetroLines[i].MetroStations[j - 1];
                         neighboringStations[count] = system.MetroLines[i].MetroStations[j + 1];
-                        count++;
+                        return;
                     }
                 }
             }
@@ -249,74 +248,87 @@ void getNeighboringStations(MetroSystem system, MetroStation station, MetroStati
     }
 }
 
+void findPath(MetroStation start, MetroStation finish, MetroStation path[], MetroStation partialPath[])
+{
+}
+
+void recursivelyFindPath(MetroStation start, MetroStation finish, MetroStation partialPath[], MetroStation bestPath[])
+{
+}
 int main(int argc, char const *argv[])
 {
-    MetroSystem system;
-    system.count = 0;
+    // define 3 metro lines, 9 metro stations, and an empty myPath
+    MetroSystem istanbul;
+    MetroLine red = {'\0'}, blue = {'\0'}, green = {'\0'};
+    MetroStation s1, s2, s3, s4, s5, s6, s7, s8, s9;
+    MetroStation myPath[SIZE] = {'\0'};
 
-    MetroLine line;
-    strcpy(line.color, "Green");
-    line.count = 0;
-    addLine(&system, line);
+    strcpy(red.color, "red");
+    strcpy(blue.color, "blue");
+    strcpy(green.color, "green");
 
-    MetroStation station;
-    strcpy(station.name, "Sogutlucesme");
-    station.x = 5;
-    station.y = 8;
-    addStation(&line, station);
+    strcpy(s1.name, "Haydarpasa");
+    s1.x = 0;
+    s1.y = 0;
+    strcpy(s2.name, "Sogutlucesme");
+    s2.x = 10;
+    s2.y = 5;
+    strcpy(s3.name, "Goztepe");
+    s3.x = 20;
+    s3.y = 10;
+    strcpy(s4.name, "Kozyatagi");
+    s4.x = 30;
+    s4.y = 35;
+    strcpy(s5.name, "Bostanci");
+    s5.x = 45;
+    s5.y = 20;
+    strcpy(s6.name, "Kartal");
+    s6.x = 55;
+    s6.y = 20;
+    strcpy(s7.name, "Samandira");
+    s7.x = 60;
+    s7.y = 40;
+    strcpy(s8.name, "Icmeler");
+    s8.x = 70;
+    s8.y = 15;
 
-    MetroStation station1;
-    strcpy(station1.name, "Kartal");
-    station1.x = 6;
-    station1.y = 7;
-    addStation(&line, station1);
+    // Add several metro stations to the given metro lines.
+    addStation(&red, s1);
+    addStation(&red, s2);
+    addStation(&red, s3);
+    addStation(&red, s4);
+    addStation(&red, s5);
+    addStation(&red, s8);
 
-    MetroStation station2;
-    strcpy(station2.name, "Samandira");
-    station2.x = 12;
-    station2.y = 16;
-    addStation(&line, station2);
+    addStation(&blue, s2);
+    addStation(&blue, s3);
+    addStation(&blue, s4);
+    addStation(&blue, s6);
+    addStation(&blue, s7);
 
-    MetroLine line1;
-    strcpy(line1.color, "Blue");
-    line1.count = 0;
-    addLine(&system, line1);
+    addStation(&green, s2);
+    addStation(&green, s3);
+    addStation(&green, s5);
+    addStation(&green, s6);
+    addStation(&green, s8);
 
-    MetroStation station3;
-    strcpy(station3.name, "Goztepe");
-    station3.x = 26;
-    station3.y = 4;
-    addStation(&line1, station3);
+    // Add red, blue, green metro lines to the Istanbul metro system.
+    addLine(&istanbul, red);
+    addLine(&istanbul, blue);
+    addLine(&istanbul, green);
 
-    MetroLine line2;
-    strcpy(line2.color, "Red");
-    line2.count = 0;
-    addLine(&system, line2);
-
-    MetroStation station4;
-    strcpy(station4.name, "Bostanci");
-    station4.x = 5;
-    station4.y = 5;
-    addStation(&line2, station2);
-
-    MetroLine line3;
-    strcpy(line3.color, "Red");
-    line2.count = 0;
-    addLine(&system, line3);
-
-    MetroStation station5;
-    strcpy(station5.name, "Haydarpasa");
-    station5.x = 16;
-    station5.y = 8;
-    addStation(&line3, station5);
-
-    MetroStation neighboringStations[2];
-
-    getNeighboringStations(system, station1, neighboringStations);
-    // print each element of neighboring stations to the console
-    for (int i = 0; i < 2; i++)
+    // print the content of the red, blue, green metro lines
+    printLine(red);
+    printf("\n");
+    printLine(blue);
+    printf("\n");
+    printLine(green);
+    printf("\n");
+    getNeighboringStations(istanbul, s7, myPath);
+    printPath(myPath);
+    for (int i = 0; i < sizeof(myPath) / sizeof(myPath[0]); i++)
     {
-        printf("%s\n", neighboringStations[i].name);
+        printf("%s\n", myPath[i].name);
     }
     return 0;
 }
