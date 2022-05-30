@@ -169,9 +169,10 @@ void printLine(MetroLine line)
     }
 }
 
-void printPath(MetroStation *stations)
+void printPath(MetroStation stations[])
 {
-    int size = sizeof(stations)/sizeof(stations[0]);
+    int *p = stations;
+    int size = sizeof(p) / sizeof(*p);
     for (int i = 0; i < size; i++)
     {
         printf("%s\n", stations[i].name);
@@ -261,7 +262,7 @@ int main(int argc, char const *argv[])
     MetroSystem istanbul;
     MetroLine red = {'\0'}, blue = {'\0'}, green = {'\0'};
     MetroStation s1, s2, s3, s4, s5, s6, s7, s8, s9;
-    MetroStation myPath[SIZE] = {'\0'};
+    MetroStation myPath[] = {'\0'};
 
     strcpy(red.color, "red");
     strcpy(blue.color, "blue");
@@ -326,7 +327,8 @@ int main(int argc, char const *argv[])
     printf("\n");
     getNeighboringStations(istanbul, s7, myPath);
     printPath(myPath);
-    for (int i = 0; i < sizeof(myPath) / sizeof(myPath[0]); i++)
+    int size = sizeof(myPath) / sizeof(myPath[0]);
+    for (int i = 0; i < size; i++)
     {
         printf("%s\n", myPath[i].name);
     }
