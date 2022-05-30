@@ -26,6 +26,20 @@ typedef struct
 
 } MetroSystem;
 
+int equals(MetroStation s1, MetroStation s2);
+void addStation(MetroLine *line, MetroStation station);
+int hasStation(MetroLine line, MetroStation station);
+MetroStation getFirstStop(MetroLine line);
+MetroStation getLastStop(MetroLine line);
+MetroStation getPreviousStop(MetroLine line, MetroStation station);
+MetroStation getNextStop(MetroLine line, MetroStation station);
+void addLine(MetroSystem *system, MetroLine line);
+void printLine(MetroLine line);
+void printPath(MetroStation stations[]);
+double getDistanceTravelled(MetroStation stations[]);
+MetroStation findNearestStation(MetroSystem system, double x, double y);
+void getNeighboringStations(MetroSystem system, MetroStation station, MetroStation neighboringStations[]);
+
 int equals(MetroStation s1, MetroStation s2)
 {
     return (strcmp(s1.name, s2.name) == 0 ? 1 : 0);
@@ -57,6 +71,22 @@ MetroStation getFirstStop(MetroLine line)
     if (line.count > 0)
     {
         return line.MetroStations[0];
+    }
+    else
+    {
+        MetroStation station;
+        strcpy(station.name, "NULL");
+        station.x = 0;
+        station.y = 0;
+        return station;
+    }
+}
+
+MetroStation getLastStop(MetroLine line)
+{
+    if (line.count > 0)
+    {
+        return line.MetroStations[line.count - 1];
     }
     else
     {
@@ -139,21 +169,22 @@ void printLine(MetroLine line)
     }
 }
 
-void printPath(MetroLine line)
+void printPath(MetroStation *stations)
 {
-    for (int i = 0; i < line.count; i++)
+    int size = sizeof(stations) / sizeof(*stations);
+    for (int i = 0; i < size; i++)
     {
-        printf("%s\n", line.MetroStations[i].name);
+        printf("%s\n", stations[i].name);
     }
 }
 
-double getDistanceTravelled(MetroStation stations[])
+double getDistanceTravelled(MetroStation *stations)
 {
     double distance = 0;
-    int count = sizeof(stations) / sizeof(stations[0]);
-    if (count > 1)
+    int size = sizeof(stations) / sizeof(*stations);
+    if (size > 1)
     {
-        for (int i = 0; i < count - 1; i++)
+        for (int i = 0; i < size - 1; i++)
         {
             distance += sqrt(pow(stations[i + 1].x - stations[i].x, 2) + pow(stations[i + 1].y - stations[i].y, 2));
         }
@@ -161,37 +192,26 @@ double getDistanceTravelled(MetroStation stations[])
     return distance;
 }
 
-// may need to change this
 MetroStation findNearestStation(MetroSystem system, double x, double y)
 {
-    MetroStation nearestStation;
-    strcpy(nearestStation.name, "NULL");
-    nearestStation.x = 0;
-    nearestStation.y = 0;
-    double distance = 0;
+    MetroStation station;
+    strcpy(station.name, "NULL");
+    station.x = 0;
+    station.y = 0;
+    double minDistance = 1000000;
     for (int i = 0; i < system.count; i++)
     {
-        for (int j = 0; j < system.MetroLines[i].count - 1; j++)
+        for (int j = 0; j < system.MetroLines[i].count; j++)
         {
-            if (j == 0)
+            double distance = sqrt(pow(system.MetroLines[i].MetroStations[j].x - x, 2) + pow(system.MetroLines[i].MetroStations[j].y - y, 2));
+            if (distance < minDistance)
             {
-                MetroStation firstStop = getFirstStop(system.MetroLines[i]);
-                distance = sqrt(pow(firstStop.x - x, 2) + pow(firstStop.y - y, 2));
-                nearestStation = firstStop;
-            }
-            else
-            {
-                MetroStation nextStop = getNextStop(system.MetroLines[j], nearestStation);
-                double newDistance = sqrt(pow(nextStop.x - x, 2) + pow(nextStop.y - y, 2));
-                if (newDistance < distance)
-                {
-                    distance = newDistance;
-                    nearestStation = system.MetroLines[i].MetroStations[j];
-                }
+                minDistance = distance;
+                station = system.MetroLines[i].MetroStations[j];
             }
         }
     }
-    return nearestStation;
+    return station;
 }
 
 void getNeighboringStations(MetroSystem system, MetroStation station, MetroStation neighboringStations[])
@@ -201,41 +221,26 @@ void getNeighboringStations(MetroSystem system, MetroStation station, MetroStati
     {
         for (int j = 0; j < system.MetroLines[i].count; j++)
         {
+            int lastIndex = system.MetroLines[i].count - 1;
             if (hasStation(system.MetroLines[i], station))
             {
-                if (j == 0)
+                if (equals(system.MetroLines[i].MetroStations[j], station))
                 {
-                    MetroStation firstStop = getFirstStop(system.MetroLines[i]);
-                    if (!equals(firstStop, station))
+                    if (j == 0)
                     {
-                        neighboringStations[count] = firstStop;
+                        neighboringStations[count] = system.MetroLines[i].MetroStations[j + 1];
                         count++;
                     }
-                }
-                else
-                {
-                    MetroStation previousStop = getPreviousStop(system.MetroLines[i], station);
-                    if (!equals(previousStop, station))
+                    else if (j == lastIndex)
                     {
-                        neighboringStations[count] = previousStop;
+                        neighboringStations[count] = system.MetroLines[i].MetroStations[j - 1];
                         count++;
                     }
-                }
-                if (j == system.MetroLines[i].count - 1)
-                {
-                    MetroStation lastStop = getFirstStop(system.MetroLines[i]);
-                    if (!equals(lastStop, station))
+                    else
                     {
-                        neighboringStations[count] = lastStop;
+                        neighboringStations[count] = system.MetroLines[i].MetroStations[j - 1];
                         count++;
-                    }
-                }
-                else
-                {
-                    MetroStation nextStop = getNextStop(system.MetroLines[i], station);
-                    if (!equals(nextStop, station))
-                    {
-                        neighboringStations[count] = nextStop;
+                        neighboringStations[count] = system.MetroLines[i].MetroStations[j + 1];
                         count++;
                     }
                 }
@@ -244,28 +249,74 @@ void getNeighboringStations(MetroSystem system, MetroStation station, MetroStati
     }
 }
 
-
-    
 int main(int argc, char const *argv[])
 {
     MetroSystem system;
     system.count = 0;
+
     MetroLine line;
-    MetroStation station;
-    strcpy(station.name, "NULL");
-    station.x = 0;
-    station.y = 0;
-    strcpy(line.color, "NULL");
+    strcpy(line.color, "Green");
     line.count = 0;
     addLine(&system, line);
-    MetroLine line1;
+
+    MetroStation station;
+    strcpy(station.name, "Sogutlucesme");
+    station.x = 5;
+    station.y = 8;
+    addStation(&line, station);
+
     MetroStation station1;
-    strcpy(station1.name, "NULL");
-    station1.x = 0;
-    station1.y = 0;
-    strcpy(line1.color, "NULL");
+    strcpy(station1.name, "Kartal");
+    station1.x = 6;
+    station1.y = 7;
+    addStation(&line, station1);
+
+    MetroStation station2;
+    strcpy(station2.name, "Samandira");
+    station2.x = 12;
+    station2.y = 16;
+    addStation(&line, station2);
+
+    MetroLine line1;
+    strcpy(line1.color, "Blue");
     line1.count = 0;
     addLine(&system, line1);
 
+    MetroStation station3;
+    strcpy(station3.name, "Goztepe");
+    station3.x = 26;
+    station3.y = 4;
+    addStation(&line1, station3);
+
+    MetroLine line2;
+    strcpy(line2.color, "Red");
+    line2.count = 0;
+    addLine(&system, line2);
+
+    MetroStation station4;
+    strcpy(station4.name, "Bostanci");
+    station4.x = 5;
+    station4.y = 5;
+    addStation(&line2, station2);
+
+    MetroLine line3;
+    strcpy(line3.color, "Red");
+    line2.count = 0;
+    addLine(&system, line3);
+
+    MetroStation station5;
+    strcpy(station5.name, "Haydarpasa");
+    station5.x = 16;
+    station5.y = 8;
+    addStation(&line3, station5);
+
+    MetroStation neighboringStations[2];
+
+    getNeighboringStations(system, station1, neighboringStations);
+    // print each element of neighboring stations to the console
+    for (int i = 0; i < 2; i++)
+    {
+        printf("%s\n", neighboringStations[i].name);
+    }
     return 0;
 }
