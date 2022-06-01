@@ -25,6 +25,8 @@ typedef struct
     int count;
 
 } MetroSystem;
+// Declare a MetroSystem with the name of istanbul and an empty content.
+MetroSystem istanbul = {"istanbul", '\0'};
 
 int equals(MetroStation s1, MetroStation s2);
 void addStation(MetroLine *line, MetroStation station);
@@ -39,6 +41,9 @@ void printPath(MetroStation stations[]);
 double getDistanceTravelled(MetroStation stations[]);
 MetroStation findNearestStation(MetroSystem system, double x, double y);
 void getNeighboringStations(MetroSystem system, MetroStation station, MetroStation neighboringStations[]);
+void findPath(MetroStation start, MetroStation finish, MetroStation path[]);
+void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation partialPath[], MetroStation bestPath[]);
+void createDuplicate(MetroStation original[], MetroStation duplicate[], MetroStation newStation);
 
 int equals(MetroStation s1, MetroStation s2)
 {
@@ -163,32 +168,33 @@ void addLine(MetroSystem *system, MetroLine line)
 
 void printLine(MetroLine line)
 {
-    for (int i = 0; i < line.count; i++)
+    int i = 0;
+    // Print all elements of path until a unnamed MetroLine is reached.
+    printf("\nMetroLine %s\n\n", line.color);
+    while (line.MetroStations[i].name[0] != '\0')
     {
-        printf("%s\n", line.MetroStations[i].name);
+        printf("%d.%s\n", i + 1, line.MetroStations[i].name);
+        i++;
     }
 }
 
 void printPath(MetroStation stations[])
 {
-    int *p = stations;
-    int size = sizeof(p) / sizeof(*p);
-    for (int i = 0; i < size; i++)
+    int i = 0;
+    // Print all elements of path until a unnamed MetroStation is reached.
+    while (stations[i].name[0] != '\0')
     {
-        printf("%s\n", stations[i].name);
+        printf("%d.%s\n", i + 1, stations[i].name);
+        i++;
     }
 }
 
-double getDistanceTravelled(MetroStation *stations)
+double getDistanceTravelled(MetroStation stations[])
 {
     double distance = 0;
-    int size = sizeof(stations) / sizeof(*stations);
-    if (size > 1)
+    for (int i = 0; i < SIZE - 1; i++)
     {
-        for (int i = 0; i < size - 1; i++)
-        {
-            distance += sqrt(pow(stations[i + 1].x - stations[i].x, 2) + pow(stations[i + 1].y - stations[i].y, 2));
-        }
+        distance += sqrt(pow(stations[i + 1].x - stations[i].x, 2) + pow(stations[i + 1].y - stations[i].y, 2));
     }
     return distance;
 }
@@ -249,20 +255,61 @@ void getNeighboringStations(MetroSystem system, MetroStation station, MetroStati
     }
 }
 
-void findPath(MetroStation start, MetroStation finish, MetroStation path[], MetroStation partialPath[])
+void findPath(MetroStation start, MetroStation finish, MetroStation path[])
 {
+    MetroStation partialPath[SIZE];
+    recursiveFindPath(start, finish, path, partialPath);
 }
 
-void recursivelyFindPath(MetroStation start, MetroStation finish, MetroStation partialPath[], MetroStation bestPath[])
+void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation partialPath[], MetroStation bestPath[])
 {
+    static int count = 0;
+    // Base case 1: If start and finish are same stations then the bestPath is just an empty array.
+    if (equals(start, finish))
+    {
+        bestPath = partialPath;
+        return;
+    }
+    // Base case 2: If finish is contained inside partialPath then partialPath is finished then it is bestPath.
+    for (int i = 0; i < SIZE; i++)
+    {
+        if (strcmp(partialPath[i].name, finish.name) == 0)
+        {
+            return;
+        }
+    }
+    MetroStation neighbors[SIZE];
+    // Calculate neighbors.
+    getNeighboringStations(istanbul, start, neighbors);
+    MetroStation duplicatePath[SIZE];
+    // Duplicate partialPath and add start to end of array.
+    createDuplicate(partialPath, duplicatePath, start);
+    MetroStation currentPath[SIZE];
+    // Recurse until finish is reached with new current start as naighbor of start.
+    recursiveFindPath(neighbors[count++], finish, duplicatePath, partialPath);
 }
-int main(int argc, char const *argv[])
+
+void createDuplicate(MetroStation original[], MetroStation duplicate[], MetroStation newStation)
 {
+    int i = 0;
+    while (original[i].name[0] != '\0')
+    {
+        duplicate[i] = original[i];
+        i++;
+    }
+    duplicate[i] = newStation;
+    
+}
+
+int main()
+{
+    double myX = 1, myY = 2;
+    double goalX = 62, goalY = 45;
+
     // define 3 metro lines, 9 metro stations, and an empty myPath
-    MetroSystem istanbul;
     MetroLine red = {'\0'}, blue = {'\0'}, green = {'\0'};
     MetroStation s1, s2, s3, s4, s5, s6, s7, s8, s9;
-    MetroStation myPath[] = {'\0'};
+    MetroStation myPath[SIZE] = {'\0'};
 
     strcpy(red.color, "red");
     strcpy(blue.color, "blue");
@@ -320,17 +367,35 @@ int main(int argc, char const *argv[])
 
     // print the content of the red, blue, green metro lines
     printLine(red);
-    printf("\n");
     printLine(blue);
-    printf("\n");
     printLine(green);
+
+    // find the nearest stations to the current and target locations
+    MetroStation nearMe = findNearestStation(istanbul, myX, myY);
+    MetroStation nearGoal = findNearestStation(istanbul, goalX, goalY);
+
     printf("\n");
-    getNeighboringStations(istanbul, s7, myPath);
-    printPath(myPath);
-    int size = sizeof(myPath) / sizeof(myPath[0]);
-    for (int i = 0; i < size; i++)
+
+    printf("The best path from %s to %s is:\n", nearMe.name, nearGoal.name);
+
+    // if the nearest current and target stations are the same, then print a message and exit.
+    if (equals(nearMe, nearGoal))
     {
-        printf("%s\n", myPath[i].name);
+        printf("It is better to walk!\n");
+        return 0;
     }
+
+    // Calculate and print the myPath with the minimum distance travelled from start to target stations.
+    findPath(nearMe, nearGoal, myPath);
+
+    if (strlen(myPath[0].name) == 0)
+    {
+        printf("There is no path on the metro!\n");
+    }
+    else
+    {
+        printPath(myPath);
+    }
+
     return 0;
 }
