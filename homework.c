@@ -44,7 +44,9 @@ void getNeighboringStations(MetroSystem system, MetroStation station, MetroStati
 int isContained(MetroStation station, MetroStation stations[]);
 void findPath(MetroStation start, MetroStation finish, MetroStation path[]);
 void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation partialPath[], MetroStation bestPath[]);
+void updateBestPath(MetroStation bestPath[], MetroStation partialPath[]);
 void createDuplicate(MetroStation original[], MetroStation duplicate[], MetroStation newStation);
+int getLength(MetroStation *stations);
 
 int equals(MetroStation s1, MetroStation s2)
 {
@@ -169,14 +171,12 @@ void addLine(MetroSystem *system, MetroLine line)
 
 void printLine(MetroLine line)
 {
-    int i = 0;
-    // Print all elements of path until a unnamed MetroLine is reached.
-    printf("\nMetroLine %s\n\n", line.color);
-    while (line.MetroStations[i].name[0] != '\0')
+    printf("Metroline %s:  ", line.color);
+    for (int i = 0; i < line.count; i++)
     {
-        printf("%d.%s\n", i + 1, line.MetroStations[i].name);
-        i++;
+        printf("%s, ", line.MetroStations[i].name);
     }
+    printf("\n");
 }
 
 void printPath(MetroStation stations[])
@@ -273,42 +273,39 @@ void findPath(MetroStation start, MetroStation finish, MetroStation path[])
     MetroStation partialPath[SIZE] = {'\0'};
     recursiveFindPath(start, finish, path, partialPath);
 }
-int index = 0;
+
 void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation partialPath[], MetroStation bestPath[])
 {
     if (isContained(start, partialPath))
     {
         return;
     }
+    MetroStation duplicatedPath[SIZE] = {'\0'};
+    createDuplicate(duplicatedPath, partialPath, start);
     if (equals(start, finish))
     {
-        partialPath = bestPath;
+        updateBestPath(bestPath, duplicatedPath);
         return;
     }
     MetroStation neighbors[SIZE] = {'\0'};
     getNeighboringStations(istanbul, start, neighbors);
-    int i = 0;
-    while (neighbors[i].name[0] != '\0')
+    for (int i = 0; i < getLength(neighbors); i++)
     {
-        if (!isContained(neighbors[i], partialPath))
-        {
-            partialPath[i] = neighbors[i];
-        }
-        i++;
+        recursiveFindPath(neighbors[i], finish, duplicatedPath, bestPath);
     }
-    MetroStation duplicatedPath[SIZE] = {'\0'};
-    createDuplicate(duplicatedPath, partialPath, start);
-    
-    while (partialPath[index].name[0] != '\0')
-    {
-        recursiveFindPath(partialPath[index], finish, partialPath, bestPath);
-        index++;
-        // partialPath[0] = '\0';
-    }
-    // recursiveFindPath(neighbors[index], finish, partialPath, duplicatedPath);
 }
 
-void createDuplicate(MetroStation original[], MetroStation duplicate[], MetroStation newStation)
+int getLength(MetroStation *stations)
+{
+    int length = 0;
+    for (int i = 0; stations[i].name[0] != '\0'; i++)
+    {
+        length++;
+    }
+    return length;
+}
+
+void createDuplicate(MetroStation *original, MetroStation *duplicate, MetroStation newStation)
 {
     int i = 0;
     while (original[i].name[0] != '\0')
@@ -319,6 +316,24 @@ void createDuplicate(MetroStation original[], MetroStation duplicate[], MetroSta
     duplicate[i] = newStation;
 }
 
+void updateBestPath(MetroStation *bestPath, MetroStation *currentPath)
+{
+    if (getDistanceTravelled(bestPath) == 0 || (getDistanceTravelled(currentPath) < getDistanceTravelled(bestPath)))
+    {
+        double nearestDistance = getDistanceTravelled(currentPath);
+        arrangeBestPath(bestPath, currentPath);
+    }
+}
+
+void arrangeBestPath(MetroStation *bestPath, MetroStation *currentPath)
+{
+    int i = 0;
+    while (bestPath[i].name[0] != '\0')
+    {
+        bestPath[i] = currentPath[i];
+        i++;
+    }
+}
 int main()
 {
     double myX = 1, myY = 2;
