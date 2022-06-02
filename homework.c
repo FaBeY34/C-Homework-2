@@ -47,6 +47,7 @@ void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation par
 void updateBestPath(MetroStation bestPath[], MetroStation partialPath[]);
 void createDuplicate(MetroStation original[], MetroStation duplicate[], MetroStation newStation);
 int getLength(MetroStation *stations);
+void switchBestPath(MetroStation *bestPath, MetroStation *currentPath);
 
 int equals(MetroStation s1, MetroStation s2)
 {
@@ -307,11 +308,10 @@ int getLength(MetroStation *stations)
 
 void createDuplicate(MetroStation *original, MetroStation *duplicate, MetroStation newStation)
 {
-    int i = 0;
-    while (original[i].name[0] != '\0')
+    int i;
+    for (i = 0; i < getLength(original); i++)
     {
         duplicate[i] = original[i];
-        i++;
     }
     duplicate[i] = newStation;
 }
@@ -321,17 +321,15 @@ void updateBestPath(MetroStation *bestPath, MetroStation *currentPath)
     if (getDistanceTravelled(bestPath) == 0 || (getDistanceTravelled(currentPath) < getDistanceTravelled(bestPath)))
     {
         double nearestDistance = getDistanceTravelled(currentPath);
-        arrangeBestPath(bestPath, currentPath);
+        switchBestPath(bestPath, currentPath);
     }
 }
 
-void arrangeBestPath(MetroStation *bestPath, MetroStation *currentPath)
+void switchBestPath(MetroStation *bestPath, MetroStation *currentPath)
 {
-    int i = 0;
-    while (bestPath[i].name[0] != '\0')
+    for (int i = 0; i < getLength(currentPath); i++)
     {
         bestPath[i] = currentPath[i];
-        i++;
     }
 }
 int main()
