@@ -45,9 +45,9 @@ int isContained(MetroStation station, MetroStation stations[]);
 void findPath(MetroStation start, MetroStation finish, MetroStation path[]);
 void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation partialPath[], MetroStation bestPath[]);
 void updateBestPath(MetroStation bestPath[], MetroStation partialPath[]);
-void createDuplicate(MetroStation original[], MetroStation duplicate[], MetroStation newStation);
+void addStartStationToTheEnd(MetroStation stations[], MetroStation start);
 int getLength(MetroStation *stations);
-void switchBestPath(MetroStation *bestPath, MetroStation *currentPath);
+void duplicatePath(MetroStation *bestPath, MetroStation *currentPath);
 
 int equals(MetroStation s1, MetroStation s2)
 {
@@ -182,19 +182,16 @@ void printLine(MetroLine line)
 
 void printPath(MetroStation stations[])
 {
-    int i = 0;
-    // Print all elements of path until a unnamed MetroStation is reached.
-    while (stations[i].name[0] != '\0')
+    for (int i = 0; i < getLength(stations); i++)
     {
         printf("%d.%s\n", i + 1, stations[i].name);
-        i++;
     }
 }
 
 double getDistanceTravelled(MetroStation stations[])
 {
     double distance = 0;
-    for (int i = 0; i < SIZE - 1; i++)
+    for (int i = 0; i < getLength(stations); i++)
     {
         distance += sqrt(pow(stations[i + 1].x - stations[i].x, 2) + pow(stations[i + 1].y - stations[i].y, 2));
     }
@@ -259,9 +256,9 @@ void getNeighboringStations(MetroSystem system, MetroStation station, MetroStati
 
 int isContained(MetroStation station, MetroStation stations[])
 {
-    while (stations[0].name[0] != '\0')
+    for (int i = 0; i < getLength(stations); i++)
     {
-        if (equals(station, stations[0]))
+        if (equals(station, stations[i]))
         {
             return 1;
         }
@@ -281,13 +278,17 @@ void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation par
     {
         return;
     }
+
     MetroStation duplicatedPath[SIZE] = {'\0'};
-    createDuplicate(duplicatedPath, partialPath, start);
+    duplicatePath(duplicatedPath, partialPath); 
+    addStartStationToTheEnd(duplicatedPath, start);
+
     if (equals(start, finish))
     {
         updateBestPath(bestPath, duplicatedPath);
         return;
     }
+
     MetroStation neighbors[SIZE] = {'\0'};
     getNeighboringStations(istanbul, start, neighbors);
     for (int i = 0; i < getLength(neighbors); i++)
@@ -295,25 +296,19 @@ void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation par
         recursiveFindPath(neighbors[i], finish, duplicatedPath, bestPath);
     }
 }
+void addStartStationToTheEnd(MetroStation stations[], MetroStation start)
+{
+    stations[getLength(stations)] = start;
+}
 
 int getLength(MetroStation *stations)
 {
     int length = 0;
-    for (int i = 0; stations[i].name[0] != '\0'; i++)
+    for (int i = 0; getLength(stations); i++)
     {
         length++;
     }
     return length;
-}
-
-void createDuplicate(MetroStation *original, MetroStation *duplicate, MetroStation newStation)
-{
-    int i;
-    for (i = 0; i < getLength(original); i++)
-    {
-        duplicate[i] = original[i];
-    }
-    duplicate[i] = newStation;
 }
 
 void updateBestPath(MetroStation *bestPath, MetroStation *currentPath)
@@ -321,17 +316,18 @@ void updateBestPath(MetroStation *bestPath, MetroStation *currentPath)
     if (getDistanceTravelled(bestPath) == 0 || (getDistanceTravelled(currentPath) < getDistanceTravelled(bestPath)))
     {
         double nearestDistance = getDistanceTravelled(currentPath);
-        switchBestPath(bestPath, currentPath);
+        duplicatePath(bestPath, currentPath);
     }
 }
 
-void switchBestPath(MetroStation *bestPath, MetroStation *currentPath)
+void duplicatePath(MetroStation *bestPath, MetroStation *currentPath)
 {
     for (int i = 0; i < getLength(currentPath); i++)
     {
         bestPath[i] = currentPath[i];
     }
 }
+
 int main()
 {
     double myX = 1, myY = 2;
@@ -427,6 +423,5 @@ int main()
     {
         printPath(myPath);
     }
-
     return 0;
 }
