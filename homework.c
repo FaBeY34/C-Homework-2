@@ -304,7 +304,7 @@ void addStartStationToTheEnd(MetroStation stations[], MetroStation start)
 int getLength(MetroStation *stations)
 {
     int length = 0;
-    for (int i = 0; getLength(stations); i++)
+    while (stations[length].name[0] != '\0')
     {
         length++;
     }
