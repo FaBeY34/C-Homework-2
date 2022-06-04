@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
 #define SIZE 10
 
 typedef struct
@@ -30,44 +29,25 @@ typedef struct
 MetroSystem istanbul = {"istanbul", '\0'};
 
 int equals(MetroStation s1, MetroStation s2);
-
-void addStation(MetroLine *line, MetroStation station);
-
+void addStation(MetroLine line[], MetroStation station);
 int hasStation(MetroLine line, MetroStation station);
-
 MetroStation getFirstStop(MetroLine line);
-
 MetroStation getLastStop(MetroLine line);
-
 MetroStation getPreviousStop(MetroLine line, MetroStation station);
-
 MetroStation getNextStop(MetroLine line, MetroStation station);
-
-void addLine(MetroSystem *system, MetroLine line);
-
+void addLine(MetroSystem system[], MetroLine line);
 void printLine(MetroLine line);
-
 void printPath(MetroStation stations[]);
-
 double getDistanceTravelled(MetroStation stations[]);
-
 MetroStation findNearestStation(MetroSystem system, double x, double y);
-
 void getNeighboringStations(MetroSystem system, MetroStation station, MetroStation neighboringStations[]);
-
 int isContained(MetroStation station, MetroStation stations[]);
-
 void findPath(MetroStation start, MetroStation finish, MetroStation path[]);
-
 void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation partialPath[], MetroStation bestPath[]);
-
 void updateBestPath(MetroStation bestPath[], MetroStation partialPath[]);
-
 void addStartStationToTheEnd(MetroStation stations[], MetroStation start);
-
-int getLength(MetroStation *stations);
-
-void duplicatePath(MetroStation *bestPath, MetroStation *currentPath);
+int getLength(MetroStation stations[]);
+void duplicatePath(MetroStation bestPath[], MetroStation currentPath[]);
 
 int equals(MetroStation s1, MetroStation s2)
 {
@@ -229,8 +209,7 @@ MetroStation findNearestStation(MetroSystem system, double x, double y)
     {
         for (int j = 0; j < system.MetroLines[i].count; j++)
         {
-            double distance = sqrt(pow(system.MetroLines[i].MetroStations[j].x - x, 2) +
-                                   pow(system.MetroLines[i].MetroStations[j].y - y, 2));
+            double distance = sqrt(pow(system.MetroLines[i].MetroStations[j].x - x, 2) + pow(system.MetroLines[i].MetroStations[j].y - y, 2));
             if (distance < minDistance)
             {
                 minDistance = distance;
@@ -309,6 +288,7 @@ void recursiveFindPath(MetroStation start, MetroStation finish, MetroStation par
 
     MetroStation neighbors[SIZE] = {'\0'};
     getNeighboringStations(istanbul, start, neighbors);
+
     for (int i = 0; i < getLength(neighbors); i++)
     {
         recursiveFindPath(neighbors[i], finish, duplicatedPath, bestPath);
@@ -332,9 +312,10 @@ int getLength(MetroStation *stations)
 
 void updateBestPath(MetroStation *bestPath, MetroStation *currentPath)
 {
+    static double nearestDistance;
     if (getDistanceTravelled(bestPath) == 0 || (getDistanceTravelled(currentPath) < getDistanceTravelled(bestPath)))
     {
-        double nearestDistance = getDistanceTravelled(currentPath);
+        nearestDistance = getDistanceTravelled(currentPath);
         duplicatePath(bestPath, currentPath);
     }
 }
@@ -361,30 +342,14 @@ int main()
     strcpy(blue.color, "blue");
     strcpy(green.color, "green");
 
-    strcpy(s1.name, "Haydarpasa");
-    s1.x = 0;
-    s1.y = 0;
-    strcpy(s2.name, "Sogutlucesme");
-    s2.x = 10;
-    s2.y = 5;
-    strcpy(s3.name, "Goztepe");
-    s3.x = 20;
-    s3.y = 10;
-    strcpy(s4.name, "Kozyatagi");
-    s4.x = 30;
-    s4.y = 35;
-    strcpy(s5.name, "Bostanci");
-    s5.x = 45;
-    s5.y = 20;
-    strcpy(s6.name, "Kartal");
-    s6.x = 55;
-    s6.y = 20;
-    strcpy(s7.name, "Samandira");
-    s7.x = 60;
-    s7.y = 40;
-    strcpy(s8.name, "Icmeler");
-    s8.x = 70;
-    s8.y = 15;
+    strcpy(s1.name, "Haydarpasa");   s1.x = 0;   s1.y = 0;
+    strcpy(s2.name, "Sogutlucesme");   s2.x = 10;   s2.y = 5;
+    strcpy(s3.name, "Goztepe");   s3.x = 20;   s3.y = 10;
+    strcpy(s4.name, "Kozyatagi");   s4.x = 30;   s4.y = 35;
+    strcpy(s5.name, "Bostanci");   s5.x = 45;   s5.y = 20;
+    strcpy(s6.name, "Kartal");   s6.x = 55;   s6.y = 20;
+    strcpy(s7.name, "Samandira");   s7.x = 60;   s7.y = 40;
+    strcpy(s8.name, "Icmeler");   s8.x = 70;   s8.y = 15;
 
     // Add several metro stations to the given metro lines.
     addStation(&red, s1);
@@ -433,9 +398,6 @@ int main()
 
     // Calculate and print the myPath with the minimum distance travelled from start to target stations.
     findPath(nearMe, nearGoal, myPath);
-    MetroStation neigbours[SIZE] = {"\0"};
-    getNeighboringStations(istanbul, s9, neigbours);
-    printPath(neigbours);
 
     if (strlen(myPath[0].name) == 0)
     {
