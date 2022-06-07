@@ -1,3 +1,11 @@
+/*
+In this homework, I wrote a program that suggests a route to get from a starting point to a
+target point on a metro line using the shortest distance. 
+
+Name and Surname: Feyzullah Asıllıoğlu
+Student ID: 150121021
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
